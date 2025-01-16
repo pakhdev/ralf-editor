@@ -1,0 +1,129 @@
+@font-face {
+    font-family: 'icons';
+    src: url('../fonts/icons.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+    font-family: 'icons' !important;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    font-size: 13px;
+}
+
+.icon-set-hidden:before {
+    content: "\e923";
+}
+.icon-set-text-color:before {
+    content: "\e917";
+}
+.icon-set-text-background-color:before {
+    content: "\e920";
+}
+.icon-arrow-down:before {
+    content: "\e913";
+}
+.icon-set-bold:before {
+    content: "\e914";
+}
+.icon-set-code:before {
+    content: "\e915";
+}
+.icon-insert-image:before {
+    content: "\e916";
+}
+.icon-set-italic:before {
+    content: "\e918";
+}
+.icon-insert-link:before {
+    content: "\e919";
+}
+.icon-set-list-dots:before {
+    content: "\e91a";
+}
+.icon-set-list-numbered:before {
+    content: "\e91b";
+}
+.icon-set-paragraph-center:before {
+    content: "\e91c";
+}
+.icon-set-paragraph-left:before {
+    content: "\e91d";
+}
+.icon-set-paragraph-right:before {
+    content: "\e91e";
+}
+.icon-photo:before {
+    content: "\e91f";
+}
+.icon-insert-table:before {
+    content: "\e921";
+}
+.icon-set-underline:before {
+    content: "\e922";
+}
+.icon-about:before {
+    content: "\e900";
+}
+.icon-account-settings:before {
+    content: "\e901";
+}
+.icon-close:before {
+    content: "\e902";
+}
+.icon-create:before {
+    content: "\e903";
+}
+.icon-delete:before {
+    content: "\e904";
+    color: #e9a7b6;
+}
+.icon-edit:before {
+    content: "\e905";
+    color: #adb5c0;
+}
+.icon-enter:before {
+    content: "\e906";
+}
+.icon-github:before {
+    content: "\e907";
+}
+.icon-logout:before {
+    content: "\e908";
+}
+.icon-menu:before {
+    content: "\e909";
+}
+.icon-menu-dots:before {
+    content: "\e90a";
+    color: #ADB5C0;
+}
+.icon-note:before {
+    content: "\e90b";
+}
+.icon-register:before {
+    content: "\e90c";
+}
+.icon-review:before {
+    content: "\e90d";
+}
+.icon-save:before {
+    content: "\e90e";
+}
+.icon-search:before {
+    content: "\e90f";
+}
+.icon-star:before {
+    content: "\e910";
+}
+.icon-star-filled:before {
+    content: "\e911";
+}
+.icon-tag:before {
+    content: "\e912";
+}

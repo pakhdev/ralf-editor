@@ -1,0 +1,15 @@
+Ralf Editor – Proprietary License (Pre-1.0)
+
+Copyright (c) 2025 Mikhail Pakhmutov
+
+All rights reserved.
+
+This software, including all versions up to and including version 1.0, is released for preview and internal development purposes only.
+
+You may not use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the Software or any portion thereof without express written permission from the author.
+
+Any use of this software in personal, commercial, or open source projects is strictly prohibited unless explicitly authorized by the author.
+
+Future versions of Ralf Editor may be released under a different license.
+
+For licensing inquiries, please contact: @pakhdev (Telegram)
