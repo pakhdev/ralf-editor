@@ -5,7 +5,7 @@ import TextInsertionMutation from '../../../../src/core/entities/mutations/text-
 
 vi.mock('../../../../src/core/entities/mutations/text-insertion.mutation', () => {
     const TextInsertionMutation = vi.fn();
-    TextInsertionMutation.prototype.execute = vi.fn();
+    TextInsertionMutation.apply = vi.fn();
     return { default: TextInsertionMutation };
 });
 
@@ -16,9 +16,26 @@ describe('TextDeletionMutation', () => {
         textNode = document.createTextNode('Hello, world!');
     });
 
+    it('should throw RangeError for out of bounds offset: negative start', () => {
+        expect(() => {
+            TextDeletionMutation.apply(textNode, -2, 2);
+        }).toThrow(RangeError);
+    });
+
+    it('should throw RangeError for out of bounds offset: incorrect end', () => {
+        expect(() => {
+            TextDeletionMutation.apply(textNode, 0, 100);
+        }).toThrow(RangeError);
+    });
+
+    it('should throw TypeError for non-text node', () => {
+        expect(() => {
+            TextDeletionMutation.apply(document.createElement('div'), 0, 1);
+        }).toThrow(TypeError);
+    });
+
     it('should delete text correctly at start', () => {
-        const deletionMutation = new TextDeletionMutation(6, { node: textNode, position: 0 });
-        deletionMutation.execute();
+        const deletionMutation = TextDeletionMutation.apply(textNode, 0, 6);
 
         expect(deletionMutation.removedText).toBe('Hello,');
         expect(deletionMutation.positionReference.position).toBe(0);
@@ -28,8 +45,7 @@ describe('TextDeletionMutation', () => {
     });
 
     it('should delete text correctly at end', () => {
-        const deletionMutation = new TextDeletionMutation(13, { node: textNode, position: 6 });
-        deletionMutation.execute();
+        const deletionMutation = TextDeletionMutation.apply(textNode, 6, 13);
 
         expect(deletionMutation.removedText).toBe(' world!');
         expect(deletionMutation.positionReference.position).toBe(6);
@@ -38,28 +54,16 @@ describe('TextDeletionMutation', () => {
         expect(textNode.textContent).toBe('Hello,');
     });
 
-    it('should throw RangeError for out of bounds offset: negative start', () => {
-        const deletionMutation = new TextDeletionMutation(20, { node: textNode, position: -2 });
-        expect(() => deletionMutation.execute()).toThrow(RangeError);
-    });
-
-    it('should throw RangeError for out of bounds offset: incorrect end', () => {
-        const deletionMutation = new TextDeletionMutation(20, { node: textNode, position: 0 });
-        expect(() => deletionMutation.execute()).toThrow(RangeError);
-    });
-
-    it('should throw TypeError for non-text node', () => {
-        const deletionMutation = new TextDeletionMutation(6, { node: document.createElement('div'), position: 0 });
-        expect(() => deletionMutation.execute()).toThrow(TypeError);
-    });
-
     it('should call TextInsertionMutation on undo with correct parameters', () => {
         const deletionMutation = new TextDeletionMutation(6, { node: textNode, position: 1 });
         deletionMutation.execute();
         deletionMutation.undo();
 
-        expect(TextInsertionMutation).toHaveBeenCalledWith(deletionMutation.removedText, deletionMutation.positionReference);
-        expect(TextInsertionMutation.prototype.execute).toHaveBeenCalled();
+        expect(TextInsertionMutation.apply).toHaveBeenCalledWith(
+            deletionMutation.removedText,
+            deletionMutation.positionReference.node,
+            deletionMutation.positionReference.position,
+        );
     });
 
 });

@@ -1,32 +1,81 @@
+import TextInsertionMutation from './text-insertion.mutation.ts';
 import { AbstractMutation } from './abstract/mutation.abstract.ts';
 import { MutationType } from './enums/mutation-type.enum.ts';
 import { PositionReference } from './interfaces/position-reference.interface.ts';
 import { isTextNode } from '../../utils';
-import TextInsertionMutation from './text-insertion.mutation.ts';
 
+/**
+ * A mutation that deletes a range of text from a specific text node.
+ *
+ * Properties:
+ * - `removedText`: The string that was removed from the text node.
+ * - `endOffset`: The offset in the text node where the deletion ends (non-inclusive).
+ * - `positionReference`: An object describing the deletion start:
+ *     - `node`: The target text node.
+ *     - `position`: The offset in the node where deletion begins.
+ * - `type`: MutationType.TEXT_DELETION — used for categorizing the mutation.
+ *
+ * Static Methods:
+ * - `apply(textNode, startOffset, endOffset)`:
+ *     Creates and immediately executes a mutation that removes text between the specified offsets in the given text node.
+ *
+ * - `fromObserved(textNode, startOffset, endOffset)`:
+ *     Reconstructs a mutation based on a previously observed text deletion.
+ *
+ * Instance Methods:
+ * - `execute()` — Applies the mutation by removing the text from the DOM.
+ * - `undo()` — Reverts the mutation by re-inserting the removed text at the original position.
+ */
 export default class TextDeletionMutation extends AbstractMutation {
     readonly type = MutationType.TEXT_DELETION;
-    removedText: string = '';
+    readonly removedText: string = '';
+
+    /**
+     * Applies a mutation that deletes text from a given text node within a specified range.
+     * Creates a new `TextDeletionMutation` instance and immediately executes it.
+     *
+     * @param textNode - The target text node where the deletion will occur.
+     * @param startOffset - The position in the text node where the deletion starts.
+     * @param endOffset - The position where the deletion ends (non-inclusive).
+     * @returns The executed `TextDeletionMutation` instance.
+     */
+    static apply(textNode: Node, startOffset: number, endOffset: number): TextDeletionMutation {
+        if (!isTextNode(textNode))
+            throw new TypeError('Node is not a text node');
+
+        if (startOffset < 0 || endOffset > (textNode as Text).length)
+            throw new RangeError('Offset is out of bounds');
+
+        return new TextDeletionMutation(endOffset, { node: textNode, position: startOffset }).execute();
+    }
+
+    /**
+     * Reconstructs a mutation based on a previously observed text deletion.
+     * This method is typically used when tracking DOM changes.
+     * It does not execute the mutation — only creates an instance from known parameters.
+     *
+     * @param textNode - The text node from which the text was removed.
+     * @param startOffset - The offset in the text node where the deletion began.
+     * @param removedText - The exact string that was removed.
+     * @returns A `TextDeletionMutation` instance ready for further processing or undo.
+     */
+    static fromObserved(textNode: Node, startOffset: number, removedText: string): TextDeletionMutation {
+        const endOffset = startOffset + removedText.length;
+        return new TextDeletionMutation(endOffset, { node: textNode, position: startOffset });
+    }
 
     constructor(public endOffset: number, positionReference: PositionReference) {
         super(positionReference);
+        this.removedText = (positionReference.node as Text).data.slice(positionReference.position, this.endOffset);
     }
 
     execute(): TextDeletionMutation {
-        if (!isTextNode(this.positionReference.node))
-            throw new TypeError('Node is not a text node');
-
         const { node: textNode, position: startOffset } = this.positionReference as { node: Text; position: number };
-
-        if (startOffset < 0 || this.endOffset > textNode.length)
-            throw new RangeError('Offset is out of bounds');
-
-        this.removedText = textNode.data.slice(startOffset, this.endOffset);
         (textNode as Text).deleteData(startOffset, this.endOffset - startOffset);
         return this;
     }
 
     undo(): void {
-        new TextInsertionMutation(this.removedText, this.positionReference).execute();
+        TextInsertionMutation.apply(this.removedText, this.positionReference.node, this.positionReference.position);
     }
 }
