@@ -8,7 +8,7 @@ import { isTextNode } from '../../utils';
  * A mutation that deletes a range of text from a specific text node.
  *
  * Properties:
- * - `removedText`: The string that was removed from the text node.
+ * - `deletedText`: The string that was removed from the text node.
  * - `endOffset`: The offset in the text node where the deletion ends (non-inclusive).
  * - `positionReference`: An object describing the deletion start:
  *     - `node`: The target text node.
@@ -28,7 +28,7 @@ import { isTextNode } from '../../utils';
  */
 export default class TextDeletionMutation extends AbstractMutation {
     readonly type = MutationType.TEXT_DELETION;
-    readonly removedText: string = '';
+    readonly deletedText: string = '';
 
     /**
      * Applies a mutation that deletes text from a given text node within a specified range.
@@ -56,17 +56,17 @@ export default class TextDeletionMutation extends AbstractMutation {
      *
      * @param textNode - The text node from which the text was removed.
      * @param startOffset - The offset in the text node where the deletion began.
-     * @param removedText - The exact string that was removed.
+     * @param deletedText - The exact string that was removed.
      * @returns A `TextDeletionMutation` instance ready for further processing or undo.
      */
-    static fromObserved(textNode: Node, startOffset: number, removedText: string): TextDeletionMutation {
-        const endOffset = startOffset + removedText.length;
+    static fromObserved(textNode: Node, startOffset: number, deletedText: string): TextDeletionMutation {
+        const endOffset = startOffset + deletedText.length;
         return new TextDeletionMutation(endOffset, { node: textNode, position: startOffset });
     }
 
     constructor(public endOffset: number, positionReference: PositionReference) {
         super(positionReference);
-        this.removedText = (positionReference.node as Text).data.slice(positionReference.position, this.endOffset);
+        this.deletedText = (positionReference.node as Text).data.slice(positionReference.position, this.endOffset);
     }
 
     execute(): TextDeletionMutation {
@@ -76,6 +76,6 @@ export default class TextDeletionMutation extends AbstractMutation {
     }
 
     undo(): void {
-        TextInsertionMutation.apply(this.removedText, this.positionReference.node, this.positionReference.position);
+        TextInsertionMutation.apply(this.deletedText, this.positionReference.node, this.positionReference.position);
     }
 }

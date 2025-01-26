@@ -16,6 +16,15 @@ describe('TextDeletionMutation', () => {
         textNode = document.createTextNode('Hello, world!');
     });
 
+    it('should create an instance of TextDeletionMutation', () => {
+        const deletionMutation = TextDeletionMutation.fromObserved(textNode, 0, 'Hello');
+
+        expect(deletionMutation).toBeInstanceOf(TextDeletionMutation);
+        expect(deletionMutation.deletedText).toBe('Hello');
+        expect(deletionMutation.positionReference).toEqual({ node: textNode, position: 0 });
+        expect(deletionMutation.endOffset).toBe(5);
+    });
+
     it('should throw RangeError for out of bounds offset: negative start', () => {
         expect(() => {
             TextDeletionMutation.apply(textNode, -2, 2);
@@ -37,7 +46,7 @@ describe('TextDeletionMutation', () => {
     it('should delete text correctly at start', () => {
         const deletionMutation = TextDeletionMutation.apply(textNode, 0, 6);
 
-        expect(deletionMutation.removedText).toBe('Hello,');
+        expect(deletionMutation.deletedText).toBe('Hello,');
         expect(deletionMutation.positionReference.position).toBe(0);
         expect(deletionMutation.positionReference.node).toBe(textNode);
         expect(deletionMutation.endOffset).toBe(6);
@@ -47,7 +56,7 @@ describe('TextDeletionMutation', () => {
     it('should delete text correctly at end', () => {
         const deletionMutation = TextDeletionMutation.apply(textNode, 6, 13);
 
-        expect(deletionMutation.removedText).toBe(' world!');
+        expect(deletionMutation.deletedText).toBe(' world!');
         expect(deletionMutation.positionReference.position).toBe(6);
         expect(deletionMutation.positionReference.node).toBe(textNode);
         expect(deletionMutation.endOffset).toBe(13);
@@ -60,7 +69,7 @@ describe('TextDeletionMutation', () => {
         deletionMutation.undo();
 
         expect(TextInsertionMutation.apply).toHaveBeenCalledWith(
-            deletionMutation.removedText,
+            deletionMutation.deletedText,
             deletionMutation.positionReference.node,
             deletionMutation.positionReference.position,
         );

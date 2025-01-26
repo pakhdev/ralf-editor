@@ -11,11 +11,17 @@ vi.mock('../../../../src/core/entities/mutations/text-deletion.mutation', () => 
 
 describe('TextInsertionMutation', () => {
     let textNode: Text;
-    let positionReference: { node: Text; position: number };
 
     beforeEach(() => {
         textNode = document.createTextNode('Hello, world!');
-        positionReference = { node: textNode, position: 0 };
+    });
+
+    it('should create an instance of TextInsertionMutation', () => {
+        const insertionMutation = TextInsertionMutation.fromObserved(textNode, 0, 5);
+
+        expect(insertionMutation).toBeInstanceOf(TextInsertionMutation);
+        expect(insertionMutation.insertedText).toBe('Hello');
+        expect(insertionMutation.positionReference).toEqual({ node: textNode, position: 0 });
     });
 
     it('should throw TypeError for non-text node', () => {
@@ -40,7 +46,7 @@ describe('TextInsertionMutation', () => {
         const insertionMutation = TextInsertionMutation.apply('Text ', textNode, 0);
 
         expect(insertionMutation.insertedText).toBe('Text ');
-        expect(insertionMutation.positionReference).toEqual(positionReference);
+        expect(insertionMutation.positionReference).toEqual({ node: textNode, position: 0 });
         expect(textNode.textContent).toBe('Text Hello, world!');
     });
 
