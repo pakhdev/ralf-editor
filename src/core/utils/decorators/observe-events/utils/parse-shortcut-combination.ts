@@ -1,4 +1,4 @@
-import { ShortcutOptions } from '../interfaces/shortcut-options.interface.ts';
+import { ShortcutOptions } from '../interfaces';
 
 export function parseShortcutCombination(combination: string): ShortcutOptions {
     const parts = combination.split('+');

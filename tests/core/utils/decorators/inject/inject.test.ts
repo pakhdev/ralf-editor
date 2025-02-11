@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { Inject } from '../../../../src/core/utils/decorators/inject/inject.decorator';
+import { Inject } from '../../../../../src/core/utils/decorators/inject/inject.decorator';
 import { TestActionMock } from './__mocks__/test-action.mock';
 import { RalfMock } from './__mocks__/ralf.mock';
 
