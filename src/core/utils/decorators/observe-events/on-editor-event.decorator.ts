@@ -21,7 +21,7 @@ export function OnEditorEvent(
     eventType: string,
     options?: ShortcutOptions,
 ): MethodDecorator {
-    return function (target: EventListenersClass, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    return function (target: EventListenersClass, propertyKey: string | symbol, descriptor: PropertyDescriptor): void {
         const handler = descriptor.value as (event: Event) => void;
         const metadata: EventListenerMetadata = {
             eventType,
@@ -34,3 +34,4 @@ export function OnEditorEvent(
         addDecoratorMetadata(target, propertyKey, '__editorEvents', metadata);
     };
 }
+
