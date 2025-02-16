@@ -1,5 +1,28 @@
 import { Classes, NodeAttributes, NodeCreationConfig, Style } from '../interfaces/';
 
+/**
+ * Creates an HTML element based on the provided configuration object.
+ *
+ * @param {NodeCreationConfig} config - The configuration object describing the element.
+ * @param {string} config.tagName - The tag name of the HTML element (e.g., 'div', 'p').
+ * @param {string} [config.text] - Optional text content for the element.
+ * @param {string[]} [config.classes] - Optional array of CSS classes to add.
+ * @param {Object.<string, string>[] } [config.styles] - Optional array of style objects (e.g., [{ backgroundColor: 'red' }]).
+ * @param {string} [config.style] - Optional raw CSS string to set via `setAttribute('style', ...)`.
+ * @param {NodeCreationConfig[]} [config.children] - Optional array of child element configs.
+ * @param {Object} [config] - Any other key-value pairs will be treated as attributes or event handlers.
+ * @returns {HTMLElement} The constructed and configured HTML element.
+ *
+ * @example
+ * const config = {
+ *   tagName: 'button',
+ *   text: 'Click me',
+ *   classes: ['btn', 'btn-primary'],
+ *   onClick: () => alert('Clicked!')
+ * };
+ * const button = HtmlElementBuilder.createElement(config);
+ * document.body.appendChild(button);
+ */
 export default class HtmlElementBuilder {
     static createElement(config: NodeCreationConfig): HTMLElement {
         const { tagName, ...attributes } = config;
