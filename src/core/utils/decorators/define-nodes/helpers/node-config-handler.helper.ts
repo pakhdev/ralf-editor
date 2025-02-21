@@ -126,9 +126,15 @@ export default class NodeConfigHandler {
         template: Array<string | any>,
         action: 'validate' | 'populate' | 'extract',
     ): boolean {
-
         if (action === 'validate') {
-            if (!Array.isArray(target)) return false;
+            if (!Array.isArray(target))
+                return template.every((templateItem) => {
+                    if (typeof templateItem === 'object' && templateItem !== null) {
+                        return Object.values(templateItem).every(val => val === 'optional');
+                    }
+                    return false;
+                });
+
             return template.every((templateItem) => {
                 if (typeof templateItem === 'string')
                     return target.includes(templateItem);
@@ -146,7 +152,6 @@ export default class NodeConfigHandler {
             else if (typeof templateItem !== 'string')
                 throw new Error('Invalid template item');
         });
-
         return true;
     }
 

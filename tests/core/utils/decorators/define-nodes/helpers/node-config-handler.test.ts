@@ -247,7 +247,7 @@ describe('NodeConfigHandler - isMatch()', () => {
         expect(handler.isMatch()).toBe(true);
     });
 
-    it.skip('V2 returns true if optional field inside array is missing (styles: [{ backgroundColor: "optional" }])', () => {
+    it('V2 returns true if optional field inside array is missing (styles: [{ backgroundColor: "optional" }])', () => {
         const template = { styles: [{ backgroundColor: 'optional' }] };
         const input = {};
         const handler = new NodeConfigHandler(input, template);
