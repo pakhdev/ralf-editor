@@ -33,7 +33,7 @@ import { NodeCreationConfig } from '../interfaces';
  *
  * This class helps enforce configuration integrity and enables selective transfer of customizable settings
  */
-export default class NodeConfigHandler {
+export class NodeConfigHandler {
     /**
      * The template configuration used as a reference for validation, population, and extraction
      */

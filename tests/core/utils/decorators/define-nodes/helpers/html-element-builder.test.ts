@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import HtmlElementBuilder
-    from '../../../../../../src/core/utils/decorators/define-nodes/helpers/html-element-builder.helper';
+import { HtmlElementBuilder }
+    from '../../../../../../src/core/utils/decorators/define-nodes/helpers';
 
 describe('HtmlElementBuilder', () => {
     it('should create an element with the specified tagName', () => {

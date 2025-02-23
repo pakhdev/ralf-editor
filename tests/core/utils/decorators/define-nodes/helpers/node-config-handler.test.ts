@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import NodeConfigHandler
-    from '../../../../../../src/core/utils/decorators/define-nodes/helpers/node-config-handler.helper';
+import { NodeConfigHandler }
+    from '../../../../../../src/core/utils/decorators/define-nodes/helpers';
 
 describe('NodeConfigHandler - extractCustomAttributes()', () => {
     it('extracts only attributes defined in the template', () => {

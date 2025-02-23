@@ -23,7 +23,7 @@ import { Classes, NodeAttributes, NodeCreationConfig, Style } from '../interface
  * const button = HtmlElementBuilder.createElement(config);
  * document.body.appendChild(button);
  */
-export default class HtmlElementBuilder {
+export class HtmlElementBuilder {
     static createElement(config: NodeCreationConfig): HTMLElement {
         const { tagName, ...attributes } = config;
         if (!tagName)
