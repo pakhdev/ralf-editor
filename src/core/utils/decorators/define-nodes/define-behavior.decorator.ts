@@ -13,7 +13,24 @@ const defaultBehaviorConfig: Partial<NodeBehaviorConfig> = {
     textContentOnly: false,    // Allows only text content inside
 };
 
-export function DefineBehavior(config: NodeBehaviorConfig) {
+/**
+ * The `DefineBehavior` decorator assigns behavior configuration to a specified class property.
+ *
+ * It is used to define how an HTML-like node behaves within an editor or rendering environment.
+ * The provided `config` is merged with a predefined `defaultBehaviorConfig`, ensuring all defaults are preserved
+ * unless explicitly overridden.
+ *
+ * If the target property does not exist, it will be initialized as an empty object.
+ *
+ * @param {NodeBehaviorConfig} config - The behavior configuration object. It defines how the node behaves,
+ * such as whether it allows only text content, whether adjacent elements should be merged, and more.
+ *
+ * @returns {(target: any, propertyKey: string) => void} - A decorator function applied to a class property.
+ *
+ * @example
+ * "class MyNodes {  @DefineBehavior({ textContentOnly: true, isContent: true })  paragraph: any; }"
+ */
+export function DefineBehavior(config: NodeBehaviorConfig): (target: any, propertyKey: string) => void {
     return function (target: any, propertyKey: string) {
         target[propertyKey] = target[propertyKey] || {} as EditableNode;
         target[propertyKey].behavior = { ...defaultBehaviorConfig, ...config };
