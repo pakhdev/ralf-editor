@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DefineBehavior } from '../../../../../src/core/utils/decorators/define-nodes';
 
 describe('DefineBehavior', () => {
-    it('applies default and custom behavior config to target property', () => {
+    it('should apply default and custom behavior config to target property', () => {
         class TestNode {
             @DefineBehavior({ allowEmpty: true, isBlock: true })
             node: any;
@@ -23,7 +23,7 @@ describe('DefineBehavior', () => {
         });
     });
 
-    it('does not override unspecified default values', () => {
+    it('should not override unspecified default values', () => {
         class TestNode {
             @DefineBehavior({ isContent: true })
             node: any;
@@ -35,7 +35,7 @@ describe('DefineBehavior', () => {
         expect(instance.node.behavior.isContent).toBe(true);
     });
 
-    it('initializes property if it does not exist', () => {
+    it('should initialize property if it does not exist', () => {
         class TestNode {
             @DefineBehavior({ textContentOnly: true })
             node: any;
@@ -45,5 +45,18 @@ describe('DefineBehavior', () => {
 
         expect(instance.node).toBeDefined();
         expect(instance.node.behavior.textContentOnly).toBe(true);
+    });
+
+    it('should assign behavior config and evaluate lazy functions', () => {
+        class TestNodes {
+            @DefineBehavior({ child: () => TestNodes.childNode })
+            static parentNode: any;
+
+            @DefineBehavior({ isBlock: true })
+            static childNode: any;
+        }
+
+        const parentBehavior = TestNodes.parentNode.behavior;
+        expect(parentBehavior.child).toBe(TestNodes.childNode);
     });
 });

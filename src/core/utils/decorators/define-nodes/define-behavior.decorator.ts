@@ -29,10 +29,28 @@ const defaultBehaviorConfig: Partial<NodeBehaviorConfig> = {
  *
  * @example
  * "class MyNodes {  @DefineBehavior({ textContentOnly: true, isContent: true })  paragraph: any; }"
+ *
+ * Note: If the configuration contains function values, they are wrapped into property getters.
+ * This ensures lazy evaluation of the value, which is especially useful when referencing properties
+ * that may not yet be fully initialized at the time of decoration.
  */
 export function DefineBehavior(config: NodeBehaviorConfig): (target: any, propertyKey: string) => void {
     return function (target: any, propertyKey: string) {
         target[propertyKey] = target[propertyKey] || {} as EditableNode;
-        target[propertyKey].behavior = { ...defaultBehaviorConfig, ...config };
+
+        const behaviorConfig = { ...defaultBehaviorConfig, ...config };
+
+        for (const key of Object.keys(behaviorConfig) as Array<keyof NodeBehaviorConfig>) {
+            const value = behaviorConfig[key];
+            if (typeof value === 'function') {
+                Object.defineProperty(behaviorConfig, key, {
+                    get: value,
+                    enumerable: true,
+                    configurable: true,
+                });
+            }
+        }
+
+        target[propertyKey].behavior = behaviorConfig;
     };
 }
