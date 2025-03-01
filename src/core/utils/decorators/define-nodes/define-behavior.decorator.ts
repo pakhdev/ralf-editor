@@ -1,4 +1,5 @@
 import { EditableNode, NodeBehaviorConfig } from './interfaces';
+import { DefineBehaviorInput } from './interfaces/define-behavior-input.interface.ts';
 
 const defaultBehaviorConfig: Partial<NodeBehaviorConfig> = {
     allowEmpty: false,         // Can the container be empty
@@ -34,13 +35,14 @@ const defaultBehaviorConfig: Partial<NodeBehaviorConfig> = {
  * This ensures lazy evaluation of the value, which is especially useful when referencing properties
  * that may not yet be fully initialized at the time of decoration.
  */
-export function DefineBehavior(config: NodeBehaviorConfig): (target: any, propertyKey: string) => void {
+export function DefineBehavior(config?: DefineBehaviorInput): (target: any, propertyKey: string) => void {
     return function (target: any, propertyKey: string) {
+        if (!config) config = {};
         target[propertyKey] = target[propertyKey] || {} as EditableNode;
 
         const behaviorConfig = { ...defaultBehaviorConfig, ...config };
 
-        for (const key of Object.keys(behaviorConfig) as Array<keyof NodeBehaviorConfig>) {
+        for (const key of Object.keys(behaviorConfig) as Array<keyof DefineBehaviorInput>) {
             const value = behaviorConfig[key];
             if (typeof value === 'function') {
                 Object.defineProperty(behaviorConfig, key, {

@@ -1,4 +1,5 @@
 import { Classes, NodeAttributes, NodeCreationConfig, Style } from '../interfaces/';
+import { camelToKebabCase } from '../../../string/string.utils.ts';
 
 /**
  * Creates an HTML element based on the provided configuration object.
@@ -101,7 +102,7 @@ export class HtmlElementBuilder {
     static #handleStyles(element: HTMLElement, value: Style[]): void {
         value.forEach(style => {
             for (let [styleKey, styleValue] of Object.entries(style)) {
-                styleKey = styleKey.replace(/[A-Z]/g, match => `-${ match.toLowerCase() }`);
+                styleKey = camelToKebabCase(styleKey);
                 element.style.setProperty(styleKey, styleValue);
             }
         });

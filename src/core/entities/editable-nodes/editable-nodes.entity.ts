@@ -23,12 +23,15 @@ export class EditableNodes extends AbstractNodeDefinitions {
     static align: EditableNode;
 
     @DefineCreation({ tagName: 'strong' })
+    @DefineBehavior()
     static strong: EditableNode;
 
     @DefineCreation({ tagName: 'u' })
+    @DefineBehavior()
     static underline: EditableNode;
 
     @DefineCreation({ tagName: 'i' })
+    @DefineBehavior()
     static italic: EditableNode;
 
     @DefineCreation({ tagName: 'a', href: '' })
@@ -36,12 +39,15 @@ export class EditableNodes extends AbstractNodeDefinitions {
     static link: EditableNode;
 
     @DefineCreation({ tagName: 'span', styles: [{ color: '' }] })
+    @DefineBehavior()
     static textColor: EditableNode;
 
     @DefineCreation({ tagName: 'span', styles: [{ backgroundColor: '' }] })
+    @DefineBehavior()
     static textBackgroundColor: EditableNode;
 
     @DefineCreation({ tagName: 'span', classes: ['hidden-text'] })
+    @DefineBehavior()
     static hiddenText: EditableNode;
 
     @DefineCreation({ tagName: 'div', classes: ['code-text'] })
