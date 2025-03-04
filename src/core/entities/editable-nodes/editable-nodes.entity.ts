@@ -1,6 +1,5 @@
 import AbstractNodeDefinitions from '../../utils/decorators/define-nodes/abstract/node-definitions.abstract.ts';
-import { DefineBehavior, DefineCreation } from '../../utils/decorators/define-nodes';
-import { DefineNodes } from '../../utils/decorators/define-nodes/define-nodes.decorator.ts';
+import { DefineNodes, DefineBehavior, DefineCreation } from '../../utils/decorators/define-nodes';
 import type { EditableNode } from '../../utils/decorators/define-nodes/interfaces';
 
 @DefineNodes
