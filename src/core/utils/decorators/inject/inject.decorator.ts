@@ -51,10 +51,13 @@ export function Inject<T extends { new(...args: any[]): any }>(options: InjectOp
                 const ralfInstance: Ralf = options.forRoot ? this : args[0];
                 const restArgs = options.forRoot ? args : args.slice(1);
 
+                const handlers = options.handlers?.map((Handler) => new Handler(ralfInstance, ...restArgs)) || [];
+                bindInstances(handlers, this);
+
                 const actions = options.actions?.map((Action) => new Action(ralfInstance, ...restArgs)) || [];
                 bindInstances(actions, this);
 
-                [...actions].forEach((instance) => {
+                [...handlers, ...actions].forEach((instance) => {
                     if (typeof instance.onInit === 'function') {
                         instance.onInit();
                     }
