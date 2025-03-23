@@ -40,6 +40,23 @@ import { bindInstances } from '../../classes/binding.utils.ts';
  * app.log("Hello"); // from Logger
  * app.track("Event"); // from Metrics
  * ```
+ *
+ * NOTE:
+ * - To correctly extract getters (non-method properties) into the hybrid Ralf type,
+ *   you must mark all intended getters in injected classes with the `isGetter` type:
+ *
+ * ```ts
+ * class Example {
+ *   get someValue(): number & isGetter {
+ *     return 42;
+ *   }
+ * }
+ * ```
+ *
+ * Without marking with `isGetter`, TypeScript will not treat the property as a getter
+ * in hybrid type construction.
+ *
+ * ...
  */
 export function Inject<T extends { new(...args: any[]): any }>(options: InjectOptions): Function {
     return function (target: T): T {
@@ -48,7 +65,7 @@ export function Inject<T extends { new(...args: any[]): any }>(options: InjectOp
 
             constructor(...args: any[]) {
                 super(...args);
-                const ralfInstance: Ralf = options.forRoot ? this : args[0];
+                const ralfInstance: Ralf = options.forRoot ? () => this : args[0];
                 const restArgs = options.forRoot ? args : args.slice(1);
 
                 const handlers = options.handlers?.map((Handler) => new Handler(ralfInstance, ...restArgs)) || [];

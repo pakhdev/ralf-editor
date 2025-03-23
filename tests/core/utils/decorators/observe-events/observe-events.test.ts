@@ -44,7 +44,7 @@ describe('ObserveEvents', () => {
 
     beforeEach(() => {
         ralf = new MockRalf();
-        instance = new TestClass(ralf);
+        instance = new TestClass(() => ralf);
     });
 
     it('should bind editor event with modifiers', () => {

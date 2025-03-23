@@ -7,7 +7,7 @@ export interface RalfOptions {
     editableDiv: HTMLDivElement;
 }
 
-export interface Ralf extends HybridClassType<[typeof NormalizationActions]> {}
+export interface Ralf extends HybridClassType<[typeof NormalizationActions, typeof SelectionHandler]> {}
 
 @Inject({
     actions: [NormalizationActions],

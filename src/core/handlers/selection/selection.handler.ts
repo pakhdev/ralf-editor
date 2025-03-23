@@ -2,6 +2,7 @@ import { Ralf } from '../../../ralf.ts';
 import { StoredSelection } from '../../entities/stored-selection/stored-selection.entity.ts';
 import { SelectionGetter } from './helpers/selection-getter.helper.ts';
 import { ObserveSelection, OnSelectionChange } from '../../utils/decorators/observe-selection';
+import { isGetter } from '../../utils/types/hybrid-class.type.ts';
 
 /**
  * Class that manages and tracks the selection state in a given editable div.
@@ -30,16 +31,16 @@ export class SelectionHandler {
      *
      * @param {Ralf} ralf - The Ralf instance that holds the editable div.
      */
-    constructor(readonly ralf: Ralf) {
+    constructor(readonly ralf: () => Ralf) {
         const selection = this.#getSelection();
         this.state = { previous: selection, current: selection };
     }
 
-    get currentSelection(): StoredSelection {
+    get currentSelection(): StoredSelection & isGetter {
         return this.state.current;
     }
 
-    get previousSelection(): StoredSelection {
+    get previousSelection(): StoredSelection & isGetter {
         return this.state.previous;
     }
 
@@ -62,6 +63,6 @@ export class SelectionHandler {
      * @returns {StoredSelection} The current selection state.
      */
     #getSelection(): StoredSelection {
-        return SelectionGetter.get(this.ralf.editableDiv);
+        return SelectionGetter.get(this.ralf().editableDiv);
     }
 }

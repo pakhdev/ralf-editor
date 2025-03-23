@@ -6,7 +6,6 @@ class MockRalf {
 
     constructor(editableDiv: HTMLElement) {
         this.editableDiv = editableDiv;
-        document.body.appendChild(this.editableDiv);
     }
 }
 
@@ -23,9 +22,10 @@ describe('ObserveSelection decorator', () => {
     let instance: SelectionHandler;
     const editableDiv = document.createElement('div');
     editableDiv.setAttribute('contenteditable', 'true');
+    document.body.appendChild(editableDiv);
 
     beforeEach(() => {
-        instance = new SelectionHandler(new MockRalf(editableDiv));
+        instance = new SelectionHandler(() => new MockRalf(editableDiv));
         (instance as any).__selectionListeners = [{ handler: instance.testMethod }];
     });
 
@@ -73,15 +73,15 @@ describe('ObserveSelection decorator', () => {
         expect(instance.testMethod).toHaveBeenCalledTimes(1);
     });
 
-    it('Moving with a right click: mousedown -> selectionchange -> mouseup', () => {
-        triggerEvent('mousedown', new MouseEvent('mousedown', { button: 2 }));
+    it('Moving with a left click: mousedown -> selectionchange -> mouseup', () => {
+        triggerEvent('mousedown', new MouseEvent('mousedown', { button: 0 }));
         triggerEvent('selectionchange');
         triggerEvent('mouseup');
         expect(instance.testMethod).toHaveBeenCalledTimes(1);
     });
 
-    it('Moving with a left click: mousedown -> selectionchange -> mouseup', () => {
-        triggerEvent('mousedown', new MouseEvent('mousedown', { button: 0 }));
+    it('Moving with a right click: mousedown -> selectionchange -> mouseup', () => {
+        triggerEvent('mousedown', new MouseEvent('mousedown', { button: 2 }));
         triggerEvent('selectionchange');
         triggerEvent('mouseup');
         expect(instance.testMethod).toHaveBeenCalledTimes(1);

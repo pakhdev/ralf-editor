@@ -51,7 +51,7 @@ describe('SelectionHandler', () => {
     beforeEach(() => {
         mockGetSelection.mockReset();
         mockGetSelection.mockReturnValueOnce(initialSelection);
-        handler = new SelectionHandler(new MockRalf(editableDiv) as any);
+        handler = new SelectionHandler(() => new MockRalf(editableDiv) as any);
     });
 
     it('should initialize with correct state', () => {

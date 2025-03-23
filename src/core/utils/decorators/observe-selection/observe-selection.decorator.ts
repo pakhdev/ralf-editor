@@ -4,7 +4,7 @@ import { SelectionListenerMetadata } from './interfaces/selection-listener-metad
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
-export function ObserveSelectionMixin<TBase extends Constructor<{ ralf: Ralf; }>>(Base: TBase) {
+export function ObserveSelectionMixin<TBase extends Constructor<{ ralf: () => Ralf; }>>(Base: TBase) {
     class SelectionObserver extends ObserveEvents(Base) {
         private selectionListeners: SelectionListenerMetadata[] = [];
         private mouseUpPending = false;
@@ -58,6 +58,6 @@ export function ObserveSelectionMixin<TBase extends Constructor<{ ralf: Ralf; }>
     return SelectionObserver;
 }
 
-export function ObserveSelection<TBase extends Constructor<{ ralf: Ralf; }>>(Base: TBase) {
+export function ObserveSelection<TBase extends Constructor<{ ralf: () => Ralf; }>>(Base: TBase) {
     return ObserveSelectionMixin(Base);
 }

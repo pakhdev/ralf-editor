@@ -29,7 +29,7 @@ import { EventListenerMetadata } from './interfaces';
  */
 
 export function ObserveEvents<T extends {
-    new(...args: any[]): { ralf: Ralf, options?: any };
+    new(...args: any[]): { ralf: () => Ralf, options?: any };
 }>(constructor: T) {
     return class extends constructor {
 
@@ -47,8 +47,8 @@ export function ObserveEvents<T extends {
             const editorEvents: EventListenerMetadata[] = (this as any).__editorEvents || [];
             this.#setupListeners(
                 editorEvents,
-                this.ralf.editableDiv.addEventListener.bind(this.ralf.editableDiv),
-                this.ralf.editableDiv.removeEventListener.bind(this.ralf.editableDiv),
+                this.ralf().editableDiv.addEventListener.bind(this.ralf().editableDiv),
+                this.ralf().editableDiv.removeEventListener.bind(this.ralf().editableDiv),
                 this,
             );
         }
@@ -120,13 +120,13 @@ export function ObserveEvents<T extends {
                 mutations.forEach((mutation) => {
                     if (
                         mutation.type === 'childList' &&
-                        Array.from(mutation.removedNodes).includes(this.ralf.editableDiv)
+                        Array.from(mutation.removedNodes).includes(this.ralf().editableDiv)
                     ) {
                         this.#unsubscribeAll();
                     }
                 });
             });
-            this.domChangeObserver.observe(this.ralf.editableDiv.parentNode!, { childList: true });
+            this.domChangeObserver.observe(this.ralf().editableDiv.parentNode!, { childList: true });
         }
 
         #unsubscribeAll() {

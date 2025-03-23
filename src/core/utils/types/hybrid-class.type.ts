@@ -1,16 +1,4 @@
-type ExtractPublicMethods<ClassType> = {
-    [PropertyKey in keyof ClassType as ClassType[PropertyKey] extends (...args: any[]) => any
-        ? (PropertyKey extends string ? PropertyKey : never)
-        : never]: ClassType[PropertyKey];
-};
-
-type ExtractStaticMethods<ClassType> = {
-    [PropertyKey in keyof ClassType as ClassType[PropertyKey] extends (...args: any[]) => any ? PropertyKey : never]: ClassType[PropertyKey];
-};
-
-type ExtractGetters<ClassType> = {
-    [PropertyKey in keyof ClassType as ClassType[PropertyKey] extends Function ? never : PropertyKey]: ClassType[PropertyKey];
-};
+export type isGetter = { __isGetter?: undefined };
 
 /**
  * Combines multiple class types into a single hybrid type that includes:
@@ -47,6 +35,24 @@ type ExtractGetters<ClassType> = {
  *   staticB: () => {},
  * };
  * ```
+ * ...
+ *
+ * NOTE:
+ * - To correctly extract getters (non-method properties) into the hybrid Ralf type,
+ *   you must mark all intended getters in injected classes with the `isGetter` type:
+ *
+ * ```ts
+ * class Example {
+ *   get someValue(): number & isGetter {
+ *     return 42;
+ *   }
+ * }
+ * ```
+ *
+ * Without marking with `isGetter`, TypeScript will not treat the property as a getter
+ * in hybrid type construction.
+ *
+ * ...
  */
 export type HybridClassType<T extends any[]> = T extends [infer First extends abstract new (...args: any) => any, ...infer Rest extends any[]]
     ?
@@ -55,3 +61,19 @@ export type HybridClassType<T extends any[]> = T extends [infer First extends ab
     & ExtractGetters<First extends { prototype: any } ? First['prototype'] : never>
     & ExtractStaticMethods<First>
     : {};
+
+type ExtractGetters<ClassType> = {
+    [PropertyKey in keyof ClassType as ClassType[PropertyKey] extends (...args: any[]) => any
+        ? never
+        : '__isGetter' extends keyof ClassType[PropertyKey]
+            ? PropertyKey
+            : never]: ClassType[PropertyKey];
+};
+
+type ExtractPublicMethods<ClassType> = {
+    [PropertyKey in keyof ClassType as ClassType[PropertyKey] extends Function ? PropertyKey : never]: ClassType[PropertyKey];
+};
+
+type ExtractStaticMethods<ClassType> = {
+    [PropertyKey in keyof ClassType as ClassType[PropertyKey] extends (...args: any[]) => any ? PropertyKey : never]: ClassType[PropertyKey];
+};
