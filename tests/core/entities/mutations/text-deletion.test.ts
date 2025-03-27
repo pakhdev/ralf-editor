@@ -64,7 +64,7 @@ describe('TextDeletionMutation', () => {
     });
 
     it('should call TextInsertionMutation on undo with correct parameters', () => {
-        const deletionMutation = new TextDeletionMutation(6, { node: textNode, position: 1 });
+        const deletionMutation = TextDeletionMutation.apply(textNode, 1, 6);
         deletionMutation.execute();
         deletionMutation.undo();
 

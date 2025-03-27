@@ -28,7 +28,6 @@ import { isTextNode } from '../../utils';
  */
 export default class TextDeletionMutation extends AbstractMutation {
     readonly type = MutationType.TEXT_DELETION;
-    readonly deletedText: string = '';
 
     /**
      * Applies a mutation that deletes text from a given text node within a specified range.
@@ -46,7 +45,8 @@ export default class TextDeletionMutation extends AbstractMutation {
         if (startOffset < 0 || endOffset > (textNode as Text).length)
             throw new RangeError('Offset is out of bounds');
 
-        return new TextDeletionMutation(endOffset, { node: textNode, position: startOffset }).execute();
+        const deletedText = (textNode as Text).data.slice(startOffset, endOffset);
+        return new TextDeletionMutation(endOffset, deletedText, { node: textNode, position: startOffset }).execute();
     }
 
     /**
@@ -61,12 +61,11 @@ export default class TextDeletionMutation extends AbstractMutation {
      */
     static fromObserved(textNode: Node, startOffset: number, deletedText: string): TextDeletionMutation {
         const endOffset = startOffset + deletedText.length;
-        return new TextDeletionMutation(endOffset, { node: textNode, position: startOffset });
+        return new TextDeletionMutation(endOffset, deletedText, { node: textNode, position: startOffset });
     }
 
-    constructor(public endOffset: number, positionReference: PositionReference) {
+    constructor(public endOffset: number, public readonly deletedText: string, positionReference: PositionReference) {
         super(positionReference);
-        this.deletedText = (positionReference.node as Text).data.slice(positionReference.position, this.endOffset);
     }
 
     execute(): TextDeletionMutation {
