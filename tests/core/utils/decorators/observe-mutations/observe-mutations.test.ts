@@ -6,13 +6,15 @@ import { Ralf } from '../../../../../src/ralf';
 import {
     OnNodeDeletion,
     OnNodeInsertion, OnTextDeletion,
-    OnTextInsertion,
+    OnTextInsertion, OnTextMerging, OnTextSplitting,
 } from '../../../../../src/core/utils/decorators/observe-mutations';
 import * as editorMutationInterface
     from '../../../../../src/core/entities/mutations/interfaces/editor-mutation.interface';
 import { MutationType } from '../../../../../src/core/entities/mutations/enums/mutation-type.enum';
 import { StoredSelection } from '../../../../../src/core/entities/stored-selection/stored-selection.entity';
 import { SelectedElement } from '../../../../../src/core/entities/selected-element/selected-element.entity';
+import TextMergingMutation from '../../../../../src/core/entities/mutations/text-merging.mutation';
+import TextSplittingMutation from '../../../../../src/core/entities/mutations/text-splitting.mutation';
 
 describe('ObserveMutations Decorator', () => {
     let editableDiv: HTMLDivElement;
@@ -103,6 +105,8 @@ describe('ObserveMutations Decorator', () => {
                 this.handler = vi.fn();
             }
 
+            @OnTextSplitting()
+            @OnTextMerging()
             @OnTextDeletion()
             @OnTextInsertion()
             @OnNodeInsertion()
@@ -153,7 +157,7 @@ describe('ObserveMutations Decorator', () => {
             }));
         });
 
-        it('OnTextDeletion', async () => {
+        it('OnTextDeletion (current selection', async () => {
             const ralfMock = new RalfMock(editableDiv) as Ralf;
             const testClass = new TestObserver(() => ralfMock);
             mockSelections(ralfMock, new StoredSelection(
@@ -169,6 +173,84 @@ describe('ObserveMutations Decorator', () => {
                 deletedText: 'Hello',
                 endOffset: 5,
                 positionReference: { node: textChild, position: 0 },
+            }));
+        });
+
+        it('OnTextDeletion (previous selection)', async () => {
+            const ralfMock = new RalfMock(editableDiv) as Ralf;
+            const testClass = new TestObserver(() => ralfMock);
+            mockSelections(
+                ralfMock,
+                new StoredSelection(
+                    editableDiv,
+                    new SelectedElement(textChild, 0),
+                    new SelectedElement(textChild, 0),
+                    true,
+                ),
+                new StoredSelection(
+                    editableDiv,
+                    new SelectedElement(textChild, 0),
+                    new SelectedElement(textChild, 5),
+                    false,
+                ),
+            );
+            textChild.deleteData(0, 5);
+            await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+            expect(testClass.handlerSpy).toHaveBeenCalledWith(expect.objectContaining({
+                type: MutationType.TEXT_DELETION,
+                deletedText: 'Hello',
+                endOffset: 5,
+                positionReference: { node: textChild, position: 0 },
+            }));
+        });
+
+        it('OnTextMerging', async () => {
+            const ralfMock = new RalfMock(editableDiv) as Ralf;
+            const testClass = new TestObserver(() => ralfMock);
+            const textChild2 = document.createTextNode('Appended text');
+            textChild.after(textChild2);
+            TextMergingMutation.apply(textChild, textChild2);
+            await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+            expect(testClass.handlerSpy).toHaveBeenCalledWith(expect.objectContaining({
+                type: MutationType.TEXT_MERGING,
+                removedNode: textChild2,
+                appendedText: 'Appended text',
+                positionReference: { node: textChild, position: 13 },
+            }));
+        });
+
+        it('OnTextSplitting (new node placed before)', async () => {
+            const ralfMock = new RalfMock(editableDiv) as Ralf;
+            const testClass = new TestObserver(() => ralfMock);
+            TextSplittingMutation.apply(textChild, 6, 'before');
+            await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+            expect(textChild.textContent).toBe(' world!');
+            expect(textChild.previousSibling).not.toBeNull();
+            expect(textChild.previousSibling?.nodeType).toBe(Node.TEXT_NODE);
+            expect(textChild.previousSibling?.textContent).toBe('Hello,');
+            expect(testClass.handlerSpy).toHaveBeenCalledWith(expect.objectContaining({
+                type: MutationType.TEXT_SPLITTING,
+                newNodePlacement: 'before',
+                newNode: textChild.previousSibling,
+                positionReference: { node: textChild, position: 6 },
+            }));
+        });
+
+        it('OnTextSplitting (new node placed after)', async () => {
+            const ralfMock = new RalfMock(editableDiv) as Ralf;
+            const testClass = new TestObserver(() => ralfMock);
+            TextSplittingMutation.apply(textChild, 6, 'after');
+            await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+
+            expect(textChild.textContent).toBe('Hello,');
+            expect(textChild.nextSibling).not.toBeNull();
+            expect(textChild.nextSibling?.nodeType).toBe(Node.TEXT_NODE);
+            expect(textChild.nextSibling?.textContent).toBe(' world!');
+            expect(testClass.handlerSpy).toHaveBeenCalledWith(expect.objectContaining({
+                type: MutationType.TEXT_SPLITTING,
+                newNodePlacement: 'after',
+                newNode: textChild.nextSibling,
+                positionReference: { node: textChild, position: 6 },
             }));
         });
     });

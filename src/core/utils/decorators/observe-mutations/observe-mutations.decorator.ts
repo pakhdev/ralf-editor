@@ -1,14 +1,15 @@
-import { EditorMutation } from '../../../entities/mutations/interfaces/editor-mutation.interface.ts';
-import { MutationListenerMetadata, TextMutationRecord } from './interfaces';
-import { PositionReference } from '../../../entities/mutations/interfaces/position-reference.interface.ts';
-import { Ralf } from '../../../../ralf.ts';
-import { StoredSelection } from '../../../entities/stored-selection/stored-selection.entity.ts';
-import { isTextNode } from '../../dom/type-checks.utils.ts';
 import NodeDeletionMutation from '../../../entities/mutations/node-deletion.mutation.ts';
 import NodeInsertionMutation from '../../../entities/mutations/node-insertion.mutation.ts';
 import TextDeletionMutation from '../../../entities/mutations/text-deletion.mutation.ts';
-import TextMergingMutation from '../../../entities/mutations/text-merging.mutation.ts';
 import TextInsertionMutation from '../../../entities/mutations/text-insertion.mutation.ts';
+import TextMergingMutation from '../../../entities/mutations/text-merging.mutation.ts';
+import TextSplittingMutation from '../../../entities/mutations/text-splitting.mutation.ts';
+import { EditorMutation } from '../../../entities/mutations/interfaces/editor-mutation.interface.ts';
+import { MutationListenerMetadata, TextMutationRecord } from './interfaces';
+import { MutationType } from '../../../entities/mutations/enums/mutation-type.enum.ts';
+import { Ralf } from '../../../../ralf.ts';
+import { StoredSelection } from '../../../entities/stored-selection/stored-selection.entity.ts';
+import { isTextNode } from '../../dom/type-checks.utils.ts';
 
 export function ObserveMutations<T extends {
     new(...args: any[]): { ralf: () => Ralf };
@@ -143,9 +144,38 @@ export function ObserveMutations<T extends {
             const textNodeLocation = this.#getNodePosition(textMutation.target);
 
             if (lengthDelta < 0) {
+                if (
+                    lastMutation && lastMutation.type === 'nodeInsertion'
+                    && this.#isTextNodeInsertionMatchingDelta(lastMutation, textNodeLocation.parent, lengthDelta)
+                ) {
+                    if (this.#isTextSplittingBefore(lastMutation, textNodeLocation.position, oldValue, newValue)) {
+                        return TextSplittingMutation.fromObserved(
+                            textMutation.target,
+                            oldValue.length - newValue.length,
+                            lastMutation.insertedNode,
+                            'before',
+                        );
+                    }
+
+                    if (this.#isTextSplittingAfter(lastMutation, textNodeLocation.position, oldValue, newValue)) {
+                        return TextSplittingMutation.fromObserved(
+                            textMutation.target,
+                            oldValue.length - newValue.length - 1,
+                            lastMutation.insertedNode,
+                            'after',
+                        );
+                    }
+                }
+
                 const offset = this.#pickNonCollapsedSelection().findTextNodeOffsets(textMutation.target);
                 return TextDeletionMutation.fromObserved(textMutation.target, offset.start, oldValue.slice(offset.start, offset.end));
             } else {
+                if (lastMutation && lastMutation.type === 'nodeDeletion'
+                    && this.#matchesTextMergingPattern(lastMutation, textNodeLocation.position, newValue, lengthDelta)
+                ) {
+                    return TextMergingMutation.fromObserved(textMutation.target, lastMutation.deletedNode, newValue.length - lengthDelta);
+                }
+
                 const startOffset = this.ralf().currentSelection.startElement.offset;
                 const offset = { start: startOffset, end: lengthDelta + startOffset };
                 return TextInsertionMutation.fromObserved(textMutation.target, offset.start, offset.end);
@@ -160,9 +190,56 @@ export function ObserveMutations<T extends {
             });
         }
 
+        #matchesTextMergingPattern(lastMutation: NodeDeletionMutation, textNodePosition: number, newValue: string, lengthDelta: number): boolean {
+            return isTextNode(lastMutation.deletedNode)
+                && lastMutation.positionReference.position === textNodePosition + 1
+                && newValue.endsWith(lastMutation.deletedNode.textContent!)
+                && lastMutation.deletedNode.textContent!.length - lengthDelta === 0;
+        }
+
         #pickNonCollapsedSelection(): StoredSelection {
             const { previousSelection, currentSelection } = this.ralf();
             return currentSelection.isCollapsed ? previousSelection : currentSelection;
+        }
+
+        #isTextNodeInsertionMatchingDelta(
+            lastMutation: EditorMutation,
+            textNodeParent: Node,
+            lengthDelta: number,
+        ): boolean {
+            return lastMutation.type === MutationType.NODE_INSERTION
+                && lastMutation.positionReference.node === textNodeParent
+                && isTextNode(lastMutation.insertedNode)
+                && lengthDelta + lastMutation.insertedNode.textContent!.length === 0;
+        }
+
+        #isTextTrimmed(
+            oldValue: string,
+            newValue: string,
+            checkPosition: 'start' | 'end',
+            text: string,
+        ): boolean {
+            return oldValue === (checkPosition === 'start' ? text + newValue : newValue + text);
+        }
+
+        #isTextSplittingBefore(
+            lastMutation: NodeInsertionMutation,
+            textNodePosition: number,
+            oldValue: string,
+            newValue: string,
+        ): boolean {
+            return lastMutation.positionReference.position === textNodePosition - 1
+                && this.#isTextTrimmed(oldValue, newValue, 'start', lastMutation.insertedNode.textContent!);
+        }
+
+        #isTextSplittingAfter(
+            lastMutation: NodeInsertionMutation,
+            textNodePosition: number,
+            oldValue: string,
+            newValue: string,
+        ): boolean {
+            return lastMutation.positionReference.position === textNodePosition + 1
+                && this.#isTextTrimmed(oldValue, newValue, 'end', lastMutation.insertedNode.textContent!);
         }
     };
 }
