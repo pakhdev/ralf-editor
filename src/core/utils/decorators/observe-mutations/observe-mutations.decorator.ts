@@ -11,6 +11,29 @@ import { Ralf } from '../../../../ralf.ts';
 import { StoredSelection } from '../../../entities/stored-selection/stored-selection.entity.ts';
 import { isTextNode } from '../../dom/type-checks.utils.ts';
 
+/**
+ * A class decorator that enables DOM mutation observation for rich text editing components.
+ *
+ * When applied, this decorator:
+ * - Initializes a live DOM node map (`nodeMap`) that tracks each node's parent and position.
+ *   This allows the system to reconstruct where a removed node was located in the document structure.
+ * - Starts a `MutationObserver` on the node returned by `ralf().editableDiv`.
+ * - Collects and batches native `MutationRecord`s via microtasks for efficient processing.
+ * - Transforms raw mutations into semantic editor mutations:
+ *   `NodeInsertion`, `NodeDeletion`, `TextInsertion`, `TextDeletion`, `TextMerging`, and `TextSplitting`.
+ * - Dispatches these semantic mutations to registered handler functions.
+ *
+ * The target class must implement a `ralf(): Ralf` method, returning an object with:
+ * - `editableDiv: Node` — the root DOM node being observed,
+ * - `currentSelection` and `previousSelection` — selection state snapshots of type `StoredSelection`.
+ *
+ * Mutation listener metadata (`__mutationListeners`) must be registered using auxiliary decorators.
+ * These decorators specify which handlers are triggered for specific semantic mutation types.
+ *
+ * @template T A class constructor that includes a `ralf(): Ralf` method.
+ * @param constructor The class constructor being decorated.
+ * @returns A new class extending the original, with automatic mutation tracking capabilities.
+ */
 export function ObserveMutations<T extends {
     new(...args: any[]): { ralf: () => Ralf };
 }>(constructor: T) {
